@@ -1,4 +1,10 @@
 
+VALID = 0
+INVALID = 1
+REFLECT = 2
+OPAQUE = 3
+REFRACT = 4
+
 def read_file(filename):
     '''
     This function reads in a .bff file and returns the information on the board to be constructed.
@@ -12,9 +18,11 @@ def read_file(filename):
     **Returns**
         
         grid_str: *list of str*
-            a list of strings describing the grid to be constructed. Each character is a cell in the board. 
+            a list of strings describing the grid to be constructed.
+            Each character is a cell in the board.
         num_blocks: *list of ints*
-            list containing the number of reflective, opaque and refractive blocks (in that order) that are available to use to solve the board
+            list containing the number of reflective, opaque and refractive
+            blocks (in that order) that are available to use to solve the board
         laser_pos: *tuple of ints*
             (x, y) coordinates for the position of the laser
         laser_dir: *tuple of ints*
@@ -29,13 +37,12 @@ def read_file(filename):
     file_by_lines = raw_string_of_text.strip().splitlines()
 
     keep = []
-    discard = []
+    arr = []
+
     for idx, line in enumerate(file_by_lines):
         if len(file_by_lines[idx]) == 0:
             continue
-        if file_by_lines[idx][0] == '#':
-            discard.append(file_by_lines[idx])
-        else:
+        if file_by_lines[idx][0] != '#':
             keep.append(file_by_lines[idx])
 
     start_idx = 0
@@ -52,7 +59,7 @@ def read_file(filename):
             stop_idx = idx
         if line[0] == 'A':
             reflect = line
-        if line[0] =='B':
+        if line[0] == 'B':
             opaque = line
         if line[0] == 'C':
             refract = line
@@ -63,7 +70,7 @@ def read_file(filename):
 
 
     #get data on grid
-    grid_str = keep[start_idx+1:stop_idx]
+    grid_str = keep[start_idx + 1:stop_idx]
     for i in range(len(grid_str)):
         string = grid_str[i]
         string2 = string.replace(' ','')
@@ -83,6 +90,9 @@ def read_file(filename):
 
     return grid_str, num_blocks, laser_pos, laser_dir
 
+def increaseSize(lst, N):
+    return [el for el in lst for _ in range(N)]
+
 # def create_grid(grid_str):
 #     '''
 #     creates a class object of the board to be played.
@@ -98,25 +108,27 @@ def read_file(filename):
 #     game =  Game(w_blocks*2, h_blocks*2)
 #     return game
 
-
-VALID = 0
-INVALID = 1
-REFLECT = 2
-OPAQUE = 3
-REFRACT = 4
-
 def solve_game(game):
     '''
-    Function that solves the game. This function takes a game as an input (this game object already has all the blocks available placed in a specific arrangement) and turns on all the lasers (shoot()). It will then calculate/obtain all the path trajectories from each laser and compare the points in the trajectories to the points that we are targetting. If all the target points are included in the trajectories then the game is solved and the function returns an image representation (or text to simplify) showing which block arrangement solves the puzzle. If any of the target points is missing in the trajectories then the puzzle is not solved, the function will regenerate the game() object and check to see if this new arrangement solves the board.
+    Function that solves the game. This function takes a game as an input (this game object already
+    has all the blocks available placed in a specific arrangement) and turns on all the lasers (shoot()).
+    It will then calculate/obtain all the path trajectories from each laser and compare the points in the
+    trajectories to the points that we are targetting. If all the target points are included in the trajectories
+    then the game is solved and the function returns an image representation (or text to simplify) showing which
+    block arrangement solves the puzzle. If any of the target points is missing in the trajectories then the puzzle 
+    is not solved, the function will regenerate the game() object and check to see if this new arrangement solves the board.
     '''
     pass
 
 class Game():
     '''
-    game class is basically one possible arrangement of the available blocks in the grid. It might be a solution or it might not be (this will be determined by the solve method).
+    game class is basically one possible arrangement of the available blocks in the grid.
+    It might be a
+    solution or it might not be (this will be determined by the solve method).
     Methods included in the class are:
     - put_block: puts a block of type type in the x and y positions specified
-    - solve: generates a new game() instance with the blocks put in a random arrangement and checks to see if all the points are covered
+    - solve: generates a new game() instance with the blocks put in a random
+    arrangement and checks to see if all the points are covered
 
     - Game will create instances of the block types and lasers according to input parameters
     '''
@@ -124,7 +136,7 @@ class Game():
     def __init__(self, grid_list_of_str, n_reflect=0, n_opaque=0, n_refract=0, laser_pos=[]):
         '''
         laser_pos: *list of tuples specifyng the position of all lasers
-        laser_dir: *list of tuples specifying the direction of each laser. Same order as laser_pos. 
+        laser_dir: *list of tuples specifying the direction of each laser. Same order as laser_pos.
         '''
         w_blocks = len(grid_list_of_str[0])
         h_blocks = len(grid_list_of_str)
@@ -137,16 +149,32 @@ class Game():
 
     def create_board(self, board_from_file):
         # initialize board with all valid placements
-        board = [[VALID for _ in range(self.width)] for _ in range(self.height)]
-        # read in file and change the existing board list to match the available positions in the file.
+        board = []
+        arr = []
 
+        for i in range(len(board_from_file)):
+            arr.append(list(grid_str[i]))
 
-        return board
+        for i in range(0, len(arr)):
+            for j in range(0, len(arr[i])):
+                if arr[i][j] == 'o':
+                    arr[i][j] = VALID
+                if arr[i][j] == 'x':
+                    arr[i][j] = INVALID
+                if arr[i][j] == 'B':
+                    arr[i][j] = OPAQUE
+                if arr[i][j] == 'A':
+                    arr[i][j] = REFLECT
+                if arr[i][j] == 'C':
+                    arr[i][j] = REFRACT
+
+        return arr
         # return [h[w]==0 for h in range(self.height) for w in range(self.width)]
+
 
     def put_block(self, type, x, y):
         pass
-
+ 
 
 
 class Block():
@@ -217,10 +245,26 @@ class Laser():
 
 
 if __name__ == "__main__":
-    grid_str, num_blocks, laser_pos, laser_dir = read_file("mad_1.bff")
+    grid_str, num_blocks, laser_pos, laser_dir = read_file("numbered_6.bff")
 
-    game1 = create_grid(grid_str)
+    print(grid_str)
+    test = [] 
+    test2 = [] 
+    game = Game(grid_str)
+    test = game.create_board(grid_str)
 
-    game1.board(grid_str)
-    game1.
+    blockSize = 2
+    # print(arr)
+
+    test = increaseSize(test, blockSize)
+
+    for i in range(0, len(test)):
+        test[i] = increaseSize(test[i], blockSize)
+    for i in range(0, len(test)):
+        print(test[i])
+    # print(test)
+    # game1 = create_grid(grid_str)
+
+    # game1.board(grid_str)
+    # game1.
 

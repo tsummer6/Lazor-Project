@@ -38,7 +38,7 @@ COLORS = {
     OPAQUE : (255, 0, 0),
     REFRACT : (255, 0, 0),
     # Color ENDPOINT Blue
-    ENDPOINT: (0, 0, 255)
+    ENDPOINT: (0, 0, 255),
     # Color Lazor contact with Endpoint Purple
     HIT : (0, 0, 255)
 }
@@ -194,6 +194,8 @@ def read_file(filename):
     for i in range(len(grid_str)):
         grid_str[i] = grid_str[i].replace(' ','')
         arr.append(list(grid_str[i]))
+
+    print(arr)
 
     for i in range(0, len(arr)):
         for j in range(0, len(arr[i])):
