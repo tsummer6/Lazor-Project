@@ -20,28 +20,28 @@ REFRACT = 8
 ENDPOINT = 9
 
 HIT = 10
-COLORS = {
-    # Color VAILD White
-    VALID: (255, 255, 255),
-    # Color INVALID BLACK
-    INVALID: (0, 0, 0),
-    # Color LAZOR Red
-    LAZOR: (255, 0, 0),
+# COLORS = {
+#     # Color VAILD White
+#     VALID: (255, 255, 255),
+#     # Color INVALID BLACK
+#     INVALID: (0, 0, 0),
+#     # Color LAZOR Red
+#     LAZOR: (255, 0, 0),
 
 
-    FIXED_REFLECT : (255, 0, 0),
-    FIXED_OPAQUE : (255, 0, 0),
-    FIXED_REFRACT : (255, 0, 0),
+#     FIXED_REFLECT : (255, 0, 0),
+#     FIXED_OPAQUE : (255, 0, 0),
+#     FIXED_REFRACT : (255, 0, 0),
 
 
-    REFLECT : (255, 0, 0),
-    OPAQUE : (255, 0, 0),
-    REFRACT : (255, 0, 0),
-    # Color ENDPOINT Blue
-    ENDPOINT: (0, 0, 255),
-    # Color Lazor contact with Endpoint Purple
-    HIT : (0, 0, 255)
-}
+#     REFLECT : (255, 0, 0),
+#     OPAQUE : (255, 0, 0),
+#     REFRACT : (255, 0, 0),
+#     # Color ENDPOINT Blue
+#     ENDPOINT: (0, 0, 255),
+#     # Color Lazor contact with Endpoint Purple
+#     HIT : (0, 0, 255)
+# }
 
 def set_color(img, x0, y0, dim, color):
     '''
@@ -148,8 +148,6 @@ def read_file(filename):
         laser_dir: *tuple of ints*
             (x, y) directions of where the laser is pointing to
 
-
-
     '''
 
     raw_string_of_text = open(filename, 'r').read()
@@ -158,6 +156,11 @@ def read_file(filename):
 
     keep = []
     arr = []
+    laser_posList = []
+    laser_dirList = []
+    laser_List = []
+    points = []
+    points_List = []
 
     for idx, line in enumerate(file_by_lines):
         if len(file_by_lines[idx]) == 0:
@@ -170,8 +173,7 @@ def read_file(filename):
     reflect = ''
     refract = ''
     opaque = ''
-    laser = ''
-    points = []
+
     for idx, line in enumerate(keep):
         if line == "GRID START":
             start_idx = idx
@@ -186,7 +188,7 @@ def read_file(filename):
         if line[0] == 'P':
             points.append(line)
         if line[0] == 'L':
-            laser = line
+            laser_List.append(line)
 
 
     # Get data on grid
@@ -195,57 +197,52 @@ def read_file(filename):
         grid_str[i] = grid_str[i].replace(' ','')
         arr.append(list(grid_str[i]))
 
-    print(arr)
+    # for i in range(0, len(arr)):
+    #     for j in range(0, len(arr[i])):
+    #         if arr[i][j] == 'o':
+    #             arr[i][j] = int(arr[i][j].replace('o', '0'))
+    #         if arr[i][j] == 'x':
+    #             arr[i][j] = int(arr[i][j].replace('x', '1'))
+    #         if arr[i][j] == 'B':
+    #             arr[i][j] = int(arr[i][j].replace('B', '3'))
+    #         if arr[i][j] == 'A':
+    #             arr[i][j] = int(arr[i][j].replace('A', '4'))
+    #         if arr[i][j] == 'C':
+    #             arr[i][j] = int(arr[i][j].replace('x', '5'))
 
-    for i in range(0, len(arr)):
-        for j in range(0, len(arr[i])):
-            if arr[i][j] == 'o':
-                arr[i][j] = int(arr[i][j].replace('o', '0'))
-            if arr[i][j] == 'x':
-                arr[i][j] = int(arr[i][j].replace('x', '1'))
-            if arr[i][j] == 'B':
-                arr[i][j] = int(arr[i][j].replace('B', '3'))
-            if arr[i][j] == 'A':
-                arr[i][j] = int(arr[i][j].replace('A', '4'))
-            if arr[i][j] == 'C':
-                arr[i][j] = int(arr[i][j].replace('x', '5'))
+    # arr = increaseSize(arr, blockSize)
 
-    blockSize = 2
-    # print(arr)
+    # for i in range(0, len(arr)):
+    #     arr[i] = increaseSize(arr[i], blockSize)
 
-    arr = increaseSize(arr, blockSize)
-
-    for i in range(0, len(arr)):
-        arr[i] = increaseSize(arr[i], blockSize)
-
-    for i in range(0, len(points)):
-        T = list(points[i].replace(" ", ""))
-        x = int(int(T[1]))
-        y = int(int(T[2]))
-        if x >= len(arr):
-            x = x - 1
-        if y >= len(arr):
-            y = y - 1
-        arr[y][x] = 9
+    # for i in range(0, len(points)):
+    #     T = list(points[i].replace(" ", ""))
+    #     x = int(int(T[1]))
+    #     y = int(int(T[2]))
+    #     if x >= len(arr):
+    #         x = x - 1
+    #     if y >= len(arr):
+    #         y = y - 1
+    #     arr[y][x] = 9
 
     # # print(arr)
     width = len(arr[0])
     length = len(arr)
-    basename = "lazor"
-    SIZE = (width, length)
-    # Creating the image file
-    # Note that the image is all black
-    img = Image.new("RGB", SIZE, color=COLORS[VALID])
+    # basename = "lazor"
+    # SIZE = (width, length)
+    # # Creating the image file
+    # # Note that the image is all black
+    # img = Image.new("RGB", SIZE, color=COLORS[VALID])
 
 
-    for y, row in enumerate(arr):
-        for x, block_ID in enumerate(row):
-            # Change the color of the specified pixel
-            img.putpixel((x, y), COLORS[block_ID])
+    # for y, row in enumerate(arr):
+    #     for x, block_ID in enumerate(row):
+    #         # Change the color of the specified pixel
+    #         img.putpixel((x, y), COLORS[block_ID])
 
-    # Saving the image
-    img.save("%s_%d_%d_%d.png"
-             % (basename, width, length, blockSize))
+    # # Saving the image
+    # img.save("%s_%d_%d_%d.png"
+    #          % (basename, width, length, blockSize))
 
 
 
@@ -255,18 +252,290 @@ def read_file(filename):
     refract = refract[1:].strip()
 
     num_blocks = [reflect, opaque, refract]
+    for i in range(0, len(num_blocks)):
+        if num_blocks[i] == '':
+            num_blocks[i] = '0'
 
     # now get info on the laser (position and direction of beam)
-    laser = laser[1:].strip().split()
-    laser_dir = (int(laser[2]), int(laser[3]))
-    laser_pos = (int(laser[0]), int(laser[1]))
+    for i in range(0, len(laser_List)):
+        laser_List[i] = laser_List[i].strip().split()
+        p1 = laser_List[i][1]
+        p2 = laser_List[i][2]
+        p3 = laser_List[i][3]
+        p4 = laser_List[i][4]
+        laser_posList.append((int(p1), int(p2)))
+        laser_dirList.append((int(p3), int(p4)))
 
-    return grid_str, num_blocks, laser_pos, laser_dir
+    # now get info on the endpoints
+    for i in range(0, len(points)):
+        points[i] = points[i].strip().split()
+        p1 = points[i][1]
+        p2 = points[i][2]
+        points_List.append([int(p1), int(p2)])
+
+    return grid_str, num_blocks, laser_posList, laser_dirList, points_List
+
+class Game():
+    '''
+    game class is basically one possible arrangement of the available
+    blocks in the grid. It might be a solution or it might not be (this will be
+    determined by the solve method). Methods included in the class are:
+        - put_block: puts a block of type type in the x and
+        y positions specified
+        - solve: generates a new game() instance with the
+        blocks put in a random
+    arrangement and checks to see if all the points are covered
+
+    - Game will create instances of the block types and
+    lasers according to input parameters
+    '''
+
+    def __init__(self, board_list_of_str, n_blocks, laser_pos=[]):
+        '''
+        laser_pos: *list of tuples specifyng the position of all lasers
+        laser_dir: *list of tuples specifying the direction of each
+        laser. Same order as laser_pos.
+        '''
+
+        w_blocks = len(board_list_of_str[0])
+        h_blocks = len(board_list_of_str)
+
+        self.b_width = w_blocks
+        self.b_height = h_blocks
+        self.n_blocks = n_blocks
+        self.board_str = board_list_of_str
+
+    def create_board(self, board_from_file):
+        # initialize board with all valid placements
+        board = []
+
+        for i in range(len(board_from_file)):
+            board.append(list(grid_str[i]))
+
+        for i in range(0, len(board)):
+            for j in range(0, len(board[i])):
+                if board[i][j] == 'o':
+                    board[i][j] = VALID
+                if board[i][j] == 'x':
+                    board[i][j] = INVALID
+                if board[i][j] == 'B':
+                    board[i][j] = FIXED_OPAQUE
+                if board[i][j] == 'A':
+                    board[i][j] = FIXED_REFLECT
+                if board[i][j] == 'C':
+                    board[i][j] = FIXED_REFRACT
+
+        return board
+
+    def gen_coordinates(self, board_from_file):
+        w_blocks = len(board_from_file[0])
+        h_blocks = len(board_from_file)
+        while True:
+            i = random.randint(0, w_blocks - 1)
+            j = random.randint(0, h_blocks - 1)
+            if(i - j == 1 or 1 - j == -1 or i - j == 0):
+                break
+        return i, j
+
+    def add_blocks(self, board_from_file, num_blocks):
+        # # initialize board with all valid placements
+        n_reflect = num_blocks[0]
+        n_opaque = num_blocks[1]
+        n_refract = num_blocks[2]
+
+        if(n_reflect != 0):
+            for i in range(0, int(n_reflect)):
+                while True:
+                    i, j = self.gen_coordinates(board_from_file)
+
+                    if board_from_file[i][j] == VALID:
+                        board_from_file[i][j] = REFLECT
+                        break
+
+        if(n_opaque != 0):
+            for i in range(0, int(n_opaque)):
+                while True:
+                    i, j = self.gen_coordinates(board_from_file)
+
+                    if board_from_file[i][j] == VALID:
+                        board_from_file[i][j] = OPAQUE
+                        break
+
+        if(n_refract != 0):
+            for i in range(0, int(n_refract)):
+                while True:
+                    i, j = self.gen_coordinates(board_from_file)
+                    if board_from_file[i][j] == VALID:
+                        board_from_file[i][j] = REFRACT
+                        break
+
+        return board_from_file
+
+    def add_points(self, board, ptList, posList):
+
+        n_board = increaseSize(board, 3)
+        x = 0
+        y = 0
+        n_lazorPts = []
+        for i in range(0, len(n_board)):
+            n_board[i] = increaseSize(n_board[i], 3)
+
+        for i in range(0, len(ptList)):
+            for j in range(0, len(ptList[i])):
+                if(ptList[i][0] - 3 < 0):
+                    x = ptList[i][0]
+                    if(ptList[i][1] - 3 < 0):
+                        y = ptList[i][1]
+                        n_board[y][x] = ENDPOINT
+                    if(ptList[i][1] - 3 == 0):
+                        y = ptList[i][1] + 1
+                        n_board[y][x] = ENDPOINT
+                    if(ptList[i][1] - 3 > 0):
+                        if(ptList[i][1] == len(board) * 2):
+                            y = len(n_board) - 2
+                        else:
+                            if(ptList[i][1] == 4):
+                                y = ptList[i][1] + 1
+                            if(ptList[i][1] == 5):
+                                y = ptList[i][1] + 2
+                            if(ptList[i][1] == 7 or ptList[i][1] == 8):
+                                y = ptList[i][1] + 3
+                        n_board[y][x] = ENDPOINT
+                if(ptList[i][0] - 3 == 0):
+                    x = ptList[i][0] + 1
+                    if(ptList[i][1] - 3 < 0):
+                        y = ptList[i][1]
+                        n_board[y][x] = ENDPOINT
+                    if(ptList[i][1] - 3 == 0):
+                        y = ptList[i][1] + 1
+                        n_board[y][x] = ENDPOINT
+                    if(ptList[i][1] - 3 > 0):
+                        if(ptList[i][1] == len(board) * 2):
+                            y = len(n_board) - 2
+                        else:
+                            if(ptList[i][1] == 4):
+                                y = ptList[i][1] + 1
+                            if(ptList[i][1] == 5):
+                                y = ptList[i][1] + 2
+                            if(ptList[i][1] == 7 or ptList[i][1] == 8):
+                                y = ptList[i][1] + 3
+                    n_board[y][x] = ENDPOINT
+                if(ptList[i][0] - 3 > 0):
+                    if(ptList[i][0] == len(board) * 2):
+                        x = len(n_board) - 1
+                    else:
+                        x = ptList[i][0] + int(ptList[i][0] / 3) + 1
+                    if(ptList[i][1] - 3 < 0):
+                        y = ptList[i][1]
+                        n_board[y][x] = ENDPOINT
+                    if(ptList[i][1] - 3 == 0):
+                        y = ptList[i][1] + 1
+                        n_board[y][x] = ENDPOINT
+                    if(ptList[i][1] - 3 > 0):
+                        if(ptList[i][1] == len(board) * 2):
+                            y = len(n_board) - 2
+                        else:
+                            if(ptList[i][1] == 4):
+                                y = ptList[i][1] + 1
+                            if(ptList[i][1] == 5):
+                                y = ptList[i][1] + 2
+                            if(ptList[i][1] == 7 or ptList[i][1] == 8):
+                                y = ptList[i][1] + 3
+                        n_board[y][x] = ENDPOINT
+
+        for i in range(0, len(posList)):
+            for j in range(0, len(posList[i])):
+                if(posList[i][0] - 3 < 0):
+                    x = posList[i][0]
+                    if(posList[i][1] - 3 < 0):
+                        y = posList[i][1]
+                    if(posList[i][1] - 3 == 0):
+                        y = posList[i][1] + 1
+                    if(posList[i][1] - 3 > 0):
+                        if(posList[i][1] == len(board) * 2):
+                            y = len(n_board) - 1
+                        else:
+                            y = len(n_board) - 2
+                    n_board[y][x] = LAZOR
+                    n_lazorPts.append((x, y))
+                if(posList[i][0] - 3 == 0):
+                    x = posList[i][0] + 1
+                    if(posList[i][1] - 3 < 0):
+                        y = posList[i][1]
+                    if(posList[i][1] - 3 == 0):
+                        y = posList[i][1] + 1
+                    if(posList[i][1] - 3 > 0):
+                        if(posList[i][1] == len(board) * 2):
+                            y = len(n_board) - 1
+                        else:
+                            y = len(n_board) - 2
+                    n_board[y][x] = LAZOR
+                    n_lazorPts.append((x, y))
+                if(posList[i][0] - 3 > 0):
+                    x = posList[i][0] + int(posList[i][0] / 3) + 1
+                    if(posList[i][1] - 3 < 0):
+                        y = posList[i][1]
+                    if(posList[i][1] - 3 == 0):
+                        y = posList[i][1] + 1
+                    if(posList[i][1] - 3 > 0):
+                        if(posList[i][1] == len(board) * 2):
+                            y = len(n_board) - 1
+                        else:
+                            y = len(n_board) - 2
+                    n_board[y][x] = LAZOR
+                    n_lazorPts.append((x, y))
+
+        new_k = []
+        for elem in n_lazorPts:
+            if elem not in new_k:
+                new_k.append(elem)
+        n_lazorPts = new_k
+
+        return n_board, n_lazorPts
+
+
+    def solve_game(self, n_board, posList, dirList, slow=False):
+        w_blocks = len(n_board[0])
+        h_blocks = len(n_board)
+
+        for i in range(0, len(posList)):
+                dirx, diry = dirList[i]
+                x, y = posList[i]
+                nx = x
+                ny = y
+                while True:
+                    nx = nx + dirx
+                    ny = ny + diry
+
+                    if(nx == 0 or ny == 0):
+                        break
+                    elif(nx == w_blocks or ny == h_blocks):
+                        break
+                    else:
+                        if(n_board[ny][nx] == OPAQUE or n_board[ny][nx] == FIXED_OPAQUE):
+                            break
+                        else:
+                            n_board[ny][nx] = LAZOR
+                            if(n_board[ny][nx] == REFLECT or n_board[ny][nx] == FIXED_REFLECT):
+                            if(n_board[ny][nx] == REFRACT or n_board[ny][nx] == FIXED_REFRACT):
+                            if(n_board[ny][nx] == ENDPOINT):
+
+        return n_board
+
 
 if __name__ == "__main__":
-    grid_str, num_blocks, laser_pos, laser_dir = read_file("mad_1.bff")
-    # print(grid_str)
-    # game1 = create_grid(grid_str)
 
-    # game1.board(grid_str)
-    # game1.
+    grid_str, num_blocks, posList, dirList, ptList = read_file("tiny_5.bff")
+    # grid_str, num_blocks, posList, dirList, ptList = read_file("dark_1.bff")
+    game = Game(grid_str, num_blocks)
+    board = game.create_board(grid_str)
+    board = game.add_blocks(board, num_blocks)
+    n_board, newLazPts = game.add_points(board, ptList, posList)
+
+    # for i in range(0, len(n_board)):
+    #     print(n_board[i])
+    n_board = game.solve_game(n_board, newLazPts, dirList)
+
+    for i in range(0, len(n_board)):
+        print(n_board[i])
+ 
