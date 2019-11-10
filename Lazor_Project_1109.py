@@ -84,6 +84,9 @@ def read_file(filename):
     laser_dir = (int(laser[2]), int(laser[3]))
     laser_pos = (int(laser[0]), int(laser[1]))
 
+    print('didir')
+    print(laser_dir)
+
     print(board_str)
     print(targets)
     return board_str, num_blocks, laser_pos, laser_dir, targets
@@ -117,10 +120,11 @@ def solve_game(filename):
     board_str, num_blocks, laser_pos, laser_dir, targets = read_file(filename)
 
     board_str2 = ['xoo', 'ooo', 'oox']
-    game1 = Game(board_str2, num_blocks, laser_pos, laser_dir, targets)
+    game1 = Game(board_str, num_blocks, laser_pos, laser_dir, targets)
     game1.create_board()
     game1.create_grid()
-
+    print('dir in solve')
+    print(laser_dir)
 
     print("laser position")
     print(laser_pos)
@@ -141,10 +145,12 @@ def solve_game(filename):
 
     print(
         'lasers:')
-    print(type(game1.available_lasers[0]))
+    # print(type(game1.available_lasers[0]))
     game1.shoot(game1.available_lasers[0])
-    # for i in game1.available_lasers:
-    #     print(game1.available_lasers[i].was_shot())
+
+    for i in range(len(game1.available_lasers)):
+        print(game1.available_lasers[i].was_shot)
+
     if game1.hit_all_targets():
         print("you solved it!")
     else:
@@ -211,7 +217,7 @@ class Game():
         self.available_lasers = []
 
         for i in range(len(self.laser_pos)):
-            laser = Laser(self.laser_pos[i][0],self.laser_pos[i][1],self.laser_dir[i][0], self.laser_dir[i][0])
+            laser = Laser(self.laser_pos[i][0],self.laser_pos[i][1],self.laser_dir[i][0], self.laser_dir[i][1])
             self.available_lasers.append(laser)
 
 
@@ -374,16 +380,29 @@ class Game():
 
     def hit_all_targets(self):
         total_trajectories = []
+        # for i in range(len(self.available_lasers)):
+            # print('now i am within hit_all_targets')
+            # print(self.available_lasers[i])
+            # print(self.available_lasers[i].get_trajectory())
         for i in range(len(self.available_lasers)):
-            traj = self.available_lasers[i].get_trajectory
-            total_trajectories = total_trajectories.append(traj)
-        print('lfgkhg')
+            print('now i am within hit_all_targets')
+            print(self.available_lasers[i])
+            print(self.available_lasers[i].get_trajectory())
+            traj = list(self.available_lasers[i].get_trajectory())
+            print('this is traj')
+            print(traj)
+            total_trajectories.extend(traj)
+            print(total_trajectories)
+        print('lfgkhg total trajertories are:')
         print(total_trajectories)
-        # for t in targets:
-        #     if t not in total_trajectories:
-        #         return False
-        #     return True
-        return True
+        print('this is self.targets')
+        print(self.targets)
+        for t in self.targets:
+            if t not in total_trajectories:
+                return False
+            else:
+                return True
+        
 
 
     def shoot(self, laser):
@@ -392,14 +411,25 @@ class Game():
         '''
 
         current_x, current_y = laser.get_position()
+        # print('position')
+        # print(current_x,current_y)
         xdir, ydir = laser.get_direction()
+        # print('dirs')
+        # print(xdir, ydir)
         next_x = current_x + xdir
         next_y = current_y + ydir
+
+        # print('next step:')
+        # print(next_x, next_y)
+
+        # for i in range(len(self.grid)):
+        #     print(self.grid[i])
         
         while self.within_bounds(self.grid, next_x, next_y):
             current_x = next_x
             current_y = next_y
-            laser.add_to_path((next_x, next_y))
+            laser.add_to_path([next_x, next_y])
+
 
             if self.grid[current_x][current_y] == REFLECT:
                 face_number = get_block_face(current_x,current_y)
@@ -415,7 +445,11 @@ class Game():
 
             next_x = current_x + xdir
             next_y = current_y + ydir
-        laser.was_shot() == True
+        laser.was_shot = True
+        laser.path.append([-1,-1])
+        print('printing shot laser trajectory')
+        print(laser.get_trajectory())
+        # print(laser.was_shot)
 
 
 
@@ -438,7 +472,8 @@ class Laser():
         self.y = y
         self.xdir = xdir
         self.ydir = ydir
-        self.path = [(x, y)] #initiate the path with the starting position
+        self.path = [[x, y]] #initiate the path with the starting position
+        self.was_shot = False
 
     def get_position(self):
         '''
@@ -469,7 +504,7 @@ class Laser():
         return self.path
 
     def was_shot(self):
-        return False
+        return self.was_shot
 
 
     def reflect(self, xdir, ydir, face_number):
