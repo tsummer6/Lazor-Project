@@ -132,8 +132,9 @@ def solve_game(filename):
     # game1 = Game(board_str, num_blocks, lasers_pos, lasers_dir, targets)
     # game1.create_board()
     solved = False
-    iterations = 10000
-    while solved == False and iterations >= 0:
+    iterations = 1
+    MAX_ITERATIONS = 100000
+    while solved == False and iterations <= MAX_ITERATIONS:
         game1 = Game(board_str, num_blocks, lasers_pos, lasers_dir, targets)
         game1.create_board()
         game1.create_grid()
@@ -305,15 +306,13 @@ def solve_game(filename):
 
         # once all lasers have been shot, re-check that and then check to see if the targets have been hit.
 
-
-        game1.hit_all_targets()
-
         # if all the targets have been hit then success you win, return self.board w the winning blocks position. Else: you lost, re-generate another game with a different position for the blocks (assuming it is random)
 
 
         if game1.hit_all_targets() == True:
             solved = True
-            max_iters = iterations - 1
+            print(iterations)
+            max_iters = iterations + 1
             print("you solved it in %i iterations!" %max_iters)
             print('the winning board is:')
             for i in range(len(game1.board)):
@@ -322,7 +321,7 @@ def solve_game(filename):
             print("loser")
             print('the board could not be solved under the max specified iterations. Try running it again or increase the max allowed iterations per run')
             solved = False
-            iterations = iterations - 1
+            iterations += iterations
 
 
 class Game():
