@@ -132,7 +132,8 @@ def solve_game(filename):
     # game1 = Game(board_str, num_blocks, lasers_pos, lasers_dir, targets)
     # game1.create_board()
     solved = False
-    while solved == False:
+    iterations = 10000
+    while solved == False and iterations >= 0:
         game1 = Game(board_str, num_blocks, lasers_pos, lasers_dir, targets)
         game1.create_board()
         game1.create_grid()
@@ -201,23 +202,38 @@ def solve_game(filename):
         for i in range(len(game1.available_blocks)):
             next_block = game1.available_blocks[i]
             is_placed = False
+            # print('current block is:')
+            # print(game1.available_blocks[i].block_type)
+            # print('current board position being considered:')
+            # print()
             print('outside loop')
             while is_placed == False:
+                next_rand = [[rand_x, rand_y]]
                 print('while loop')
+                # print('current block is:')
+                # print(game1.available_blocks[i].block_type)
+                # print('current board position being considered:')
+                # print(next_rand)
                 if game1.board[rand_y][rand_x] is not VALID:
+                    print('if game is not valid')
                     rand_x = random.randint(0, len(game1.board[0])-1)
                     rand_y = random.randint(0, len(game1.board)-1)
                     is_placed = False
                 elif game1.board[rand_y][rand_x] is VALID:
+                    print('elif')
                     if next_block.block_type == OPAQUE or next_block.block_type == REFLECT:
+                        print('if OPAQUE or REFLECT')
                         if any(elem in all_invalid_adj_blocks for elem in next_rand) == True:
+                            print('if any position is invalid adj')
                             rand_x = random.randint(0, len(game1.board[0])-1)
                             rand_y = random.randint(0, len(game1.board)-1)
                             is_placed = False
                         else:
+                            print('else if no pos is invalid adj')
                             game1.put_block(next_block, rand_x, rand_y)
                             is_placed = True
                     else:
+                        print('else if block is not REF or OPAQUE')
                         game1.put_block(next_block, rand_x, rand_y)
                         is_placed = True
 
@@ -297,13 +313,16 @@ def solve_game(filename):
 
         if game1.hit_all_targets() == True:
             solved = True
-            print("you solved it!")
+            max_iters = iterations - 1
+            print("you solved it in %i iterations!" %max_iters)
             print('the winning board is:')
             for i in range(len(game1.board)):
                 print(game1.board[i])
         else:
             print("loser")
+            print('the board could not be solved under the max specified iterations. Try running it again or increase the max allowed iterations per run')
             solved = False
+            iterations = iterations - 1
 
 
 class Game():
@@ -802,6 +821,8 @@ class Laser():
 if __name__ == "__main__":
 
     solved = solve_game("dark_1.bff")
+    print('in main')
+    print(solved)
     # board_str, num_blocks, laser_pos, laser_dir = read_file("dark_1.bff")
 
     # board_str2 = ['xoo', 'ooo', 'oox']
