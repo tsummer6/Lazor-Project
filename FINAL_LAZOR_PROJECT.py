@@ -62,11 +62,8 @@ def read_file(filename):
             targets.append(point)
         if line[0] == 'L':
             line = line.strip('L').strip().split(' ')
-            # print('yuhu')
-            # print(line[2])
             laser_dir = [int(line[2]), int(line[3])]
             laser_pos = [int(line[0]), int(line[1])]
-
             lasers_pos.append(laser_pos)
             lasers_dir.append(laser_dir)
 
@@ -85,18 +82,6 @@ def read_file(filename):
 
     num_blocks = [reflect, opaque, refract]
 
-    # now get info on the laser (position and direction of beam)
-    # laser = laser[1:].strip().split()
-    # laser_dir = (int(laser[2]), int(laser[3]))
-    # laser_pos = (int(laser[0]), int(laser[1]))
-
-    # print('laserssss')
-    # print(lasers_pos)
-    # print('didirs')
-    # print(lasers_dir)
-
-    # print(board_str)
-    # print(targets)
     return board_str, num_blocks, lasers_pos, lasers_dir, targets
 
 
@@ -124,43 +109,15 @@ def solve_game(filename):
 
     '''
 
-    # read data from file
     board_str, num_blocks, lasers_pos, lasers_dir, targets = read_file(filename)
-    # print('from read_file output: lasers_pos')
-    # print(lasers_pos)
-    # print(len(lasers_pos))
-    # print(lasers_pos[2])
-    # print(lasers_pos[2][0])
-    # print('from read_file output: lasers_dir')
-    # print(lasers_dir)
-    # print('from read_file output: targets')
-    # print(targets)
-
-    # initialize Game() instance. Create the initial board. 
-
-    # board_str2 = ['xoo', 'ooo', 'oox']
-    # game1 = Game(board_str, num_blocks, lasers_pos, lasers_dir, targets)
-    # game1.create_board()
+    
     solved = False
     iterations = 1
     MAX_ITERATIONS = 10000000000
     while solved == False and iterations <= MAX_ITERATIONS:
-        # print("While")
         game1 = Game(board_str, num_blocks, lasers_pos, lasers_dir, targets)
         game1.create_board()
         game1.create_grid()
-        # print('available blocks in solve_game:')
-        # for i in range(len(game1.available_blocks)):
-        #     print(game1.available_blocks[i].block_type)
-
-        # print('available lasers in solve_game:')
-        # for i in range(len(game1.available_lasers)):
-        #     print(game1.available_lasers[i].x, game1.available_lasers[i].y)
-            # print('with direction:')
-            # print(game1.available_lasers[i].xdir, game1.available_lasers[i].ydir)
-
-
-
 
         # put the blocks available at particular positions. This is the logic that we need to figure out. 
         # put transparent blocks first, then reflective ones. Idk in what order the opaques should go (after transparent). The blocks should be in this order in the available_blocks list.
@@ -171,18 +128,11 @@ def solve_game(filename):
         rand_x = random.randint(0, len(game1.board[0])-1)
         rand_y = random.randint(0, len(game1.board)-1)
         next_rand = [[rand_x, rand_y]]
-        # print('next_rand:')
-        # print(next_rand)
 
         # if the block at rand_x, rand_y is VALID put block there. Else get another random number for x and y 
         # if a target is on the edge of the board, then the block adjacent to the target becomes invalid for reflect and opaque blocks. If the target is not on the edge of the board, then the invalid block is the one adjacent to it from the side that the laser beam is coming.
 
         all_invalid_adj_blocks = []
-        # print('printing all targets')
-        # print(targets)
-
-        # print(len(game1.grid[0]))
-        # print(len(game1.grid))
 
         border_xs = [0, len(game1.grid[0])-1]
         border_ys = [0, len(game1.grid)-1]
@@ -200,62 +150,38 @@ def solve_game(filename):
                 # where m and n are the corresponding coordinates in the grid and board respectively
                 converted_to_blocks = [[int((grid_points[0][0]-1)/2), int((grid_points[0][1]-1)/2) ], [int((grid_points[1][0]-1)/2), int((grid_points[1][1]-1)/2) ]]
                 all_invalid_adj_blocks.extend(converted_to_blocks)
-        
-        # print('random coords')
-        # print('all_invalid_adj_blocks:')
-        # print(all_invalid_adj_blocks)
-        # print(rand_x, rand_y)
-        # for i in range(len(game1.board)):
-        #     print(game1.board[i])
-        # print('looking at value:')
-        # print(game1.board[rand_y][rand_x])
 
         # conditions to place a block in a board position:
         # 1. board position must be valid
         # 2. if block is OPAQUE or REFLECT, board position must not be adjacent to target
 
-        # print('lelele')
-        # print(any(elem in all_invalid_adj_blocks for elem in next_rand))
-
 
         for i in range(len(game1.available_blocks)):
             next_block = game1.available_blocks[i]
             is_placed = False
-            # print('current block is:')
-            # print(game1.available_blocks[i].block_type)
-            # print('current board position being considered:')
-            # print()
-            # print('outside loop')
+
             while is_placed == False:
                 next_rand = [[rand_x, rand_y]]
-                # print('while loop')
-                # print('current block is:')
-                # print(game1.available_blocks[i].block_type)
-                # print('current board position being considered:')
-                # print(next_rand)
+
                 if game1.board[rand_y][rand_x] is not VALID:
-                    # print('if game is not valid')
                     rand_x = random.randint(0, len(game1.board[0])-1)
                     rand_y = random.randint(0, len(game1.board)-1)
                     is_placed = False
+
                 elif game1.board[rand_y][rand_x] is VALID:
-                    # print('elif')
                     if next_block.block_type == OPAQUE or next_block.block_type == REFLECT:
-                        # print('if OPAQUE or REFLECT')
                         if any(elem in all_invalid_adj_blocks for elem in next_rand) == True:
-                            # print('if any position is invalid adj')
                             rand_x = random.randint(0, len(game1.board[0])-1)
                             rand_y = random.randint(0, len(game1.board)-1)
                             is_placed = False
+
                         else:
-                            # print('else if no pos is invalid adj')
                             game1.put_block(next_block, rand_x, rand_y)
                             is_placed = True
+
                     else:
-                        # print('else if block is not REF or OPAQUE')
                         game1.put_block(next_block, rand_x, rand_y)
                         is_placed = True
-
 
 
         # create grids from the blocks you put
@@ -265,25 +191,7 @@ def solve_game(filename):
         for i in range(len(game1.board)):
             print(game1.board[i])
 
-        solution = [[3, 4, 3], [3, 0, 4], [4, 0, 3]]
-
-        # if game1.board == solution:
-        #     print("This is it!")
-        #     for i in range(len(game1.board)):
-        #         print(game1.board[i])
-        #     break
-
-        # print('grid')
-        # for i in range(len(game1.grid)):
-        #     print(game1.grid[i])
-
-        # print("grid faces")
-        # for j in range(len(game1.grid_faces)):
-        #     print(game1.grid_faces[j])
-
-        # print('lasers:')
         for i in range(len(game1.available_lasers)):
-            # print(game1.available_lasers[i])
             game1.shoot(game1.available_lasers[i])
 
 
@@ -298,33 +206,18 @@ def solve_game(filename):
         #         all_shot = True
 
         all_shot = False
-        # print('jjjjjj')
-        # print(game1.available_lasers[i].was_shot)
-        # print(game1.available_lasers[i].get_trajectory())
+ 
         for i in range(len(game1.available_lasers)):
             if not game1.available_lasers[i].was_shot:
                 game1.shoot(game1.available_lasers[i])
-        #     print('jjj2')
-        #     print(game1.available_lasers[i].was_shot)
+
             print(game1.available_lasers[i].get_trajectory())
-        # print('you shot all your shots')
-
-
-
-        if game1.board == solution:
-            print("This is it!")
-            for i in range(len(game1.board)):
-                print(game1.board[i])
-            break
 
 
         # once all lasers have been shot, re-check that and then check to see if the targets have been hit.
 
         # if all the targets have been hit then success you win, return self.board w the winning blocks position. Else: you lost, re-generate another game with a different position for the blocks (assuming it is random)
 
-        # print("board::")
-        # for i in range(len(game1.board)):
-        #         print(game1.board[i])
 
         if game1.hit_all_targets() == True:
             solved = True
@@ -343,7 +236,7 @@ def solve_game(filename):
             print('the board could not be solved under the max specified iterations. Try running it again or increase the max allowed iterations per run')
             print(iterations)
             solved = False
-            # iterations += 1
+            
 
     return solved, game1.board
 
@@ -449,19 +342,18 @@ class Game():
         for w in range(self.b_width):
             for h in range(self.b_height):
                 if self.board[h][w] == VALID:
-                    # grid[2*h+1][2*w+1] = VALID
                     uselessgrid, grid_faces = self.cardinal(grid, grid_faces, 2*w+1, 2*h+1, VALID)
                     continue
                 if self.board[h][w] == INVALID:
                     grid[2*h+1][2*w+1] = INVALID
                     grid, grid_faces = self.cardinal(grid, grid_faces, 2*w+1, 2*h+1, INVALID)
-                if self.board[h][w] == REFLECT: # or self.board[h][w].block_type == REFLECT:
+                if self.board[h][w] == REFLECT: 
                     grid[2*h+1][2*w+1] = REFLECT
                     grid, grid_faces = self.cardinal(grid, grid_faces, 2*w+1, 2*h+1, REFLECT)
-                if self.board[h][w] == OPAQUE: # or self.board[h][w].block_type == OPAQUE:
+                if self.board[h][w] == OPAQUE:
                     grid[2*h+1][2*w+1] = OPAQUE
                     grid, grid_faces = self.cardinal(grid, grid_faces, 2*w+1, 2*h+1, OPAQUE)
-                if self.board[h][w] == REFRACT: # or self.board[h][w].block_type == REFRACT:
+                if self.board[h][w] == REFRACT: 
                     grid[2*h+1][2*w+1] = REFRACT
                     grid, grid_faces = self.cardinal(grid, grid_faces, 2*w+1, 2*h+1, REFRACT)
 
@@ -498,7 +390,7 @@ class Game():
         down = [current[0], current[1]+1]
         left = [current[0]-1, current[1]]
         right = [current[0]+1, current[1]]
-        dirs = [up, down, left, right] #list of lists
+        dirs = [up, down, left, right] 
 
 
         grid[y][x] = value
@@ -506,7 +398,6 @@ class Game():
         i = 1
         for d in dirs:
             if self.within_bounds(grid, d[0],d[1]):
-                # print(i)
                 local_value = grid[d[1]][d[0]]
                 if local_value < value:
                     grid[d[1]][d[0]] = value
@@ -579,7 +470,7 @@ class Game():
         '''
         This function checks if all the target points are covered in the lasers' trajectories. It pools all trajectories from the different available lasers and compares the list of target points to this list of trajectories. If all targets are within the trajectory list the function returns True. If one or more points are missing in the trajectories returns False. 
         '''
-        
+
         total_trajectories = []
 
         for i in range(len(self.available_lasers)):
@@ -592,7 +483,7 @@ class Game():
 
     def shoot(self, laser):
         '''
-        This funciton shoots a given laser, i.e. calculates all the points in the trajectory after the blocks have been placed.
+        This funciton shoots a given laser, i.e. calculates all the points in the trajectory after the blocks have been placed. It does so stepwise and appends each step to the self.path variable in the laser.
         '''
 
         current_x, current_y = laser.get_position()
@@ -706,20 +597,25 @@ class Laser():
 
     def add_to_path(self, next_step):
         '''
-        Appends a step to the laser beam path
+        Appends a step to the laser beam path and saves the appended list to the self.path variable for the laser.
         '''
         self.path.append(next_step)
 
     def get_trajectory(self):
         '''
         Returns the path or paths of that laser as a list of tuples with each position the laser goes through
+
         **Returns** 
-            path: *list of tuples*
+
+            self.path: *list of tuples*
                 list with every position tuple (x,y) that the beam has gone through.
         '''
         return self.path
 
     def was_shot(self):
+        '''
+        Returns a boolean representing if the laser was shot
+        '''
         return self.was_shot
 
 
@@ -828,10 +724,8 @@ class Laser():
 
 
 if __name__ == "__main__":
-    # solved:
     solved, winning_board = solve_game("dark_1.bff")
     # solved, winning_board = solve_game("showstopper_4.bff")
-    # yet to be solved:
     # solved, winning_board = solve_game("mad_1.bff")
     print('in main')
     for i in range(len(winning_board)):
