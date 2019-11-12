@@ -1,6 +1,7 @@
 import copy 
 import random
 import time
+from itertools import chain 
 
 
 VALID = 0
@@ -209,81 +210,63 @@ def solve_game(filename):
         # print('lelele')
         # print(any(elem in all_invalid_adj_blocks for elem in next_rand))
 
+        while True:
 
-
-        for i in range(len(game1.available_blocks)):
-            next_block = game1.available_blocks[i]
-            is_placed = False
-            # print('current block is:')
-            # print(game1.available_blocks[i].block_type)
-            # print('current board position being considered:')
-            # print()
-            print('outside loop')
-            while is_placed == False:
-                next_rand = [[rand_x, rand_y]]
-                print('while loop')
+            for i in range(len(game1.available_blocks)):
+                next_block = game1.available_blocks[i]
+                is_placed = False
                 # print('current block is:')
                 # print(game1.available_blocks[i].block_type)
                 # print('current board position being considered:')
-                # print(next_rand)
-                if game1.board[rand_y][rand_x] is not VALID:
-                    print('if game is not valid')
-                    rand_x = random.randint(0, len(game1.board[0])-1)
-                    rand_y = random.randint(0, len(game1.board)-1)
-                    is_placed = False
-                elif game1.board[rand_y][rand_x] is VALID:
-                    print('elif')
-                    # if next_block.block_type == REFLECT:
-                    # if next_block.block_type == REFRACT:
-                    if next_block.block_type == OPAQUE or next_block.block_type == REFLECT:
-                        print('if OPAQUE or REFLECT')
-                        if any(elem in all_invalid_adj_blocks for elem in next_rand) == True:
-                            print('if any position is invalid adj')
-                            rand_x = random.randint(0, len(game1.board[0])-1)
-                            rand_y = random.randint(0, len(game1.board)-1)
-                            is_placed = False
+                # print()
+                print('outside loop')
+                while is_placed is False:
+                    next_rand = [[rand_x, rand_y]]
+                    print('while loop')
+                    # print('current block is:')
+                    # print(game1.available_blocks[i].block_type)
+                    # print('current board position being considered:')
+                    # print(next_rand)
+                    if game1.board[rand_y][rand_x] is not VALID:
+                        print('if game is not valid')
+                        rand_x = random.randint(0, len(game1.board[0]) - 1)
+                        rand_y = random.randint(0, len(game1.board) - 1)
+                        is_placed = False
+                    elif game1.board[rand_y][rand_x] is VALID:
+                        print('elif')
+                        if next_block.block_type == OPAQUE or next_block.block_type == REFLECT:
+                            print('if OPAQUE or REFLECT')
+                            if any(elem in all_invalid_adj_blocks for elem in next_rand) == True:
+                                print('if any position is invalid adj')
+                                rand_x = random.randint(0, len(game1.board[0]) - 1)
+                                rand_y = random.randint(0, len(game1.board) - 1)
+                                is_placed = False
+                            else:
+                                print('else if no pos is invalid adj')
+                                game1.put_block(next_block, rand_x, rand_y)
+                                is_placed = True
                         else:
-                            print('else if no pos is invalid adj')
+                            print('else if block is not REF or OPAQUE')
                             game1.put_block(next_block, rand_x, rand_y)
                             is_placed = True
-                    else:
-                        print('else if block is not REF or OPAQUE')
-                        game1.put_block(next_block, rand_x, rand_y)
-                        is_placed = True
 
+            # create grids from the blocks you put
+            game1.create_grid()
+            check = 0
 
-                # if next_block.block_type == OPAQUE or next_block.block_type == REFLECT:
-                #     if game1.board[rand_y][rand_x] is VALID and any(elem in all_invalid_adj_blocks for elem in next_rand) == False:
-                #         game1.put_block(next_block, rand_x, rand_y)
-                #         is_placed = True
-                #     else: 
-                #         rand_x = random.randint(0, len(game1.board[0])-1)
-                #         rand_y = random.randint(0, len(game1.board)-1)
-                #         is_placed = False
-                # elif next_block.block_type == REFRACT:
-                #     if game1.board[rand_y][rand_x] is VALID:
-                #         game1.put_block(next_block, rand_x, rand_y)
-                #         is_placed = True
-                #     else: 
-                #         rand_x = random.randint(0, len(game1.board[0])-1)
-                #         rand_y = random.randint(0, len(game1.board)-1)
-                #         is_placed = False
+            if(len(grid_List) != 0):
+                for i in range(0, len(grid_List)):
+                    if(list(chain.from_iterable(game1.board)) == grid_List[i]):
+                        # print(list(chain.from_iterable(game1.board)))
+                        # print(grid_List[i])
+                        # time.sleep(500)
+                        check = 1
+            else:
+                break
 
+            if check == 0:
+                break
 
-                # if game1.board[rand_y][rand_x] is VALID:
-                #  and (next_block.block_type != OPAQUE or next_block.block_type != REFLECT) and any(elem in all_invalid_adj_blocks for elem in next_rand) == False:
-                #     # print('apparently it is valid')
-                #     game1.put_block(next_block, rand_x, rand_y)
-                #     is_placed = True
-                # if game1.board[rand_y][rand_x] is not VALID or next_block.block_type == OPAQUE or next_block.block_type == REFLECT or any(elem in all_invalid_adj_blocks for elem in next_rand) == True:
-                #     # print('those coords were not VALID')
-                #     rand_x = random.randint(0, len(game1.board[0])-1)
-                #     rand_y = random.randint(0, len(game1.board)-1)
-
-
-
-        # create grids from the blocks you put
-        game1.create_grid()
 
         print('board')
         for i in range(len(game1.board)):
@@ -332,15 +315,19 @@ def solve_game(filename):
             solved = True
             print(iterations)
             max_iters = iterations + 1
-            print("you solved it in %i iterations!" %max_iters)
+            print("you solved it in %i iterations!" % max_iters)
             print('the winning board is:')
             for i in range(len(game1.board)):
                 print(game1.board[i])
+
         else:
             print("loser")
             print('the board could not be solved under the max specified iterations. Try running it again or increase the max allowed iterations per run')
             solved = False
+            grid_List.append(list(chain.from_iterable(game1.board)))
             iterations += iterations
+        print(grid_List)
+
 
 
 class Game():
@@ -650,6 +637,8 @@ class Game():
             print('printing shot laser trajectory before while loop')
             print(laser.get_trajectory())
             while self.within_bounds(self.grid, next_x, next_y) and laser.get_trajectory()[-1] != [-2,-2]:
+                print(xdir)
+                print(ydir)
 
                 current_x = next_x
                 current_y = next_y
@@ -659,13 +648,13 @@ class Game():
                     # time.sleep(2000)
                     #if (self.grid_faces[current_y][current_x] == 2) or (self.grid_faces[current_y][current_x] == 1):
                         # time.sleep(100)
-                    print(current_y)
-                    print(current_x)
+                    # print(current_y)
+                    # print(current_x)
                     print(xdir)
                     print(ydir)
-                    print(len(self.grid))
-                    print("This")
-                    print(laser.get_trajectory())
+                    # print(len(self.grid))
+                    # print("This")
+                    # print(laser.get_trajectory())
                     # print(self.grid[current_y][current_x+xdir])
                     # print(self.grid[current_y+ydir][current_x])
                     # if (current_x + xdir == lengthx):
@@ -686,13 +675,13 @@ class Game():
                         face_number = self.get_block_face(current_x,current_y)
                         laser.absorb(xdir, ydir, face_number)
                 if self.grid[current_y][current_x] == REFRACT:
-                    print(current_y)
-                    print(current_x)
+                    # print(current_y)
+                    # print(current_x)
                     print(xdir)
                     print(ydir)
-                    print(len(self.grid))
-                    print("This")
-                    print(laser.get_trajectory())
+                    # print(len(self.grid))
+                    # print("This")
+                    # print(laser.get_trajectory())
                     # print(self.grid[current_y][current_x+xdir])
                     # print(self.grid[current_y+ydir][current_x])
                     # time.sleep(2000)
@@ -867,7 +856,10 @@ class Laser():
 
     def refract(self, xdir, ydir, face_number):
         '''
-        Function the describes what happens when a laser beam hits an transparent block: light is refracted AND reflected. The function creates a new pseudo laser object at the point where the refraction occurs to account of the new path being created. 
+        Function the describes what happens when a laser beam hits an
+        transparent block: light is refracted AND reflected. The function
+        creates a new pseudo laser object at the point where the refraction
+        occurs to account of the new path being created.
 
         **Parameters**
 
@@ -887,10 +879,15 @@ class Laser():
             second_ydir: *int*
                 Outbound reflected laser y direction.
             refracted_laser: *Laser class object*
-                Laser object with the same direction as original laser. This returned laser has x,y coordinates at the point of refraction.
+                Laser object with the same direction as original laser.
+                This returned laser has x,y coordinates at the
+                point of refraction.
+
         '''
-        refracted_laser = Laser(self.x, self.y, xdir, ydir) #creates a second laser from the refracting point, that continues the same path as previously
-        if face_number==1:
+        # Creates a second laser from the refracting point, that
+        # continues the same path as previously
+        refracted_laser = Laser(self.x, self.y, xdir, ydir)
+        if face_number == 1:
 
             second_xdir = xdir
             second_ydir = - ydir
@@ -908,8 +905,8 @@ class Laser():
 if __name__ == "__main__":
 
     # solved = solve_game("dark_1.bff")
-    # solved = solve_game("mad_1.bff")
-    solved = solve_game("tiny_5.bff")
+    solved = solve_game("mad_1.bff")
+    # solved = solve_game("tiny_5.bff")
     print('in main')
     print(solved)
     # board_str, num_blocks, laser_pos, laser_dir = read_file("dark_1.bff")
