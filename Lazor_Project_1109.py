@@ -154,36 +154,43 @@ def solve_game(filename):
         # put the blocks available at particular positions. This is the logic that we need to figure out. 
         # put transparent blocks first, then reflective ones. Idk in what order the opaques should go (after transparent). The blocks should be in this order in the available_blocks list.
 
-        # RANDOM LOGIC
-        # for each block available get a x and y value within the board list. 
+        # RANDOM LOGIC (NOT COMPLETELY RANDOM - has some positioning constraints)
+
+        # for each block available get an x and y value within the board list. 
         rand_x = random.randint(0, len(game1.board[0])-1)
         rand_y = random.randint(0, len(game1.board)-1)
         next_rand = [[rand_x, rand_y]]
         print('next_rand:')
         print(next_rand)
 
-        # if the block at rand_x, rand_y is available put block there. Else get another random number for x and y 
-        # if the block is adjacent to a target it becomes invalid for reflect and opaque blocks
+        # if the block at rand_x, rand_y is VALID put block there. Else get another random number for x and y 
+        # if a target is on the edge of the board, then the block adjacent to the target becomes invalid for reflect and opaque blocks. If the target is not on the edge of the board, then the invalid block is the one adjacent to it from the side that the laser beam is coming.
 
         all_invalid_adj_blocks = []
         print('printing all targets')
         print(targets)
 
+        print(len(game1.grid[0]))
+        print(len(game1.grid))
+
+        border_xs = [0, len(game1.grid[0])-1]
+        border_ys = [0, len(game1.grid)-1]
         for i in targets:
             print(i)
-            face = game1.grid_faces[i[1]][i[0]]
-            grid_points = []
-            if face == 1:
-                grid_points = [[i[0],i[1]+1], [i[0],i[1]-1]]
-            if face == 2:
-                grid_points = [[i[0]+1,i[1]], [i[0]-1,i[1]]]
-            # board to grid: m=2n+1
-            # grid to board: n=(m-1)/2 (*use this one for this case*)
-            # where m and n are the corresponding coordinates in the grid and board respectively
-            converted_to_blocks = [[int((grid_points[0][0]-1)/2), int((grid_points[0][1]-1)/2) ], [int((grid_points[1][0]-1)/2), int((grid_points[1][1]-1)/2) ]]
-            all_invalid_adj_blocks.extend(converted_to_blocks)
-            print('all_invalid_adj_blocks:')
-            print(all_invalid_adj_blocks)
+            if i[0] in border_xs or i[1] in border_ys:
+                face = game1.grid_faces[i[1]][i[0]]
+                grid_points = []
+                if face == 1:
+                    grid_points = [[i[0],i[1]+1], [i[0],i[1]-1]]
+                if face == 2:
+                    grid_points = [[i[0]+1,i[1]], [i[0]-1,i[1]]]
+                # board to grid: m=2n+1
+                # grid to board: n=(m-1)/2 (*use this one for this case*)
+                # where m and n are the corresponding coordinates in the grid and board respectively
+                converted_to_blocks = [[int((grid_points[0][0]-1)/2), int((grid_points[0][1]-1)/2) ], [int((grid_points[1][0]-1)/2), int((grid_points[1][1]-1)/2) ]]
+                all_invalid_adj_blocks.extend(converted_to_blocks)
+                print('all_invalid_adj_blocks:')
+                print(all_invalid_adj_blocks)
 
         # print('random coords')
         # print(rand_x, rand_y)
@@ -237,35 +244,6 @@ def solve_game(filename):
                         print('else if block is not REF or OPAQUE')
                         game1.put_block(next_block, rand_x, rand_y)
                         is_placed = True
-
-
-                # if next_block.block_type == OPAQUE or next_block.block_type == REFLECT:
-                #     if game1.board[rand_y][rand_x] is VALID and any(elem in all_invalid_adj_blocks for elem in next_rand) == False:
-                #         game1.put_block(next_block, rand_x, rand_y)
-                #         is_placed = True
-                #     else: 
-                #         rand_x = random.randint(0, len(game1.board[0])-1)
-                #         rand_y = random.randint(0, len(game1.board)-1)
-                #         is_placed = False
-                # elif next_block.block_type == REFRACT:
-                #     if game1.board[rand_y][rand_x] is VALID:
-                #         game1.put_block(next_block, rand_x, rand_y)
-                #         is_placed = True
-                #     else: 
-                #         rand_x = random.randint(0, len(game1.board[0])-1)
-                #         rand_y = random.randint(0, len(game1.board)-1)
-                #         is_placed = False
-
-
-                # if game1.board[rand_y][rand_x] is VALID:
-                #  and (next_block.block_type != OPAQUE or next_block.block_type != REFLECT) and any(elem in all_invalid_adj_blocks for elem in next_rand) == False:
-                #     # print('apparently it is valid')
-                #     game1.put_block(next_block, rand_x, rand_y)
-                #     is_placed = True
-                # if game1.board[rand_y][rand_x] is not VALID or next_block.block_type == OPAQUE or next_block.block_type == REFLECT or any(elem in all_invalid_adj_blocks for elem in next_rand) == True:
-                #     # print('those coords were not VALID')
-                #     rand_x = random.randint(0, len(game1.board[0])-1)
-                #     rand_y = random.randint(0, len(game1.board)-1)
 
 
 
