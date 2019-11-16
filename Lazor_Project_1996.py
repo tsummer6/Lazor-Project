@@ -3,32 +3,10 @@ import random
 from PIL import Image
 
 
-VALID = 0
-INVALID = 1
-REFRACT = 2
-OPAQUE = 3
-REFLECT = 4
-
-COLORS = {
-    # Color VAILD White
-    VALID: (255, 255, 255),
-    # Color INVALID Black
-    INVALID: (0, 0, 0),
-    # Color REFLECT Red
-    REFLECT: (255, 0, 0),
-    # Color OPAQUE Green
-    OPAQUE: (0, 255, 0),
-    # Color REFRACT Blue
-    REFRACT: (0, 0, 255),
-
-}
-
 def set_color(img, x0, y0, dim, color):
     '''
     Seeting the color of the image pixels
-
     **Parameters**
-
         img: *JPG file*
             Image file, with its extension
             (ex. spring.jpg, cat.png).
@@ -43,9 +21,7 @@ def set_color(img, x0, y0, dim, color):
             be WALL(black) or PATH(white). During the solution it will
             turn the PATH into a VALID_PATH(green), INVALID_PATH(red), and
             an ENDPOINT(blue) with the save_maze function
-
     **Returns**
-
         None
     '''
 
@@ -57,13 +33,11 @@ def set_color(img, x0, y0, dim, color):
                 color
             )
 
-def save_board(board, blockSize=2, basename="lazor"):
+def save_board(board, blockSize=2, basename="lazor_solution_"):
     '''
     Purpose is to take the 2D array of pixel values
     and save them into a board as a PNG file
-
     **Parameters**
-
         board: *2D array int*
             A 2 dimensional array of pixel values
             to draw the image
@@ -73,9 +47,7 @@ def save_board(board, blockSize=2, basename="lazor"):
         basename: *String optional*
             String used as the first part of the image
             name
-
     **Returns**
-
         None
     '''
     # Width of the image
@@ -100,8 +72,6 @@ def save_board(board, blockSize=2, basename="lazor"):
 
 
 
-
-
 def read_file(filename):
     '''
     This function reads in a .bff file and returns the information on the board to be constructed.
@@ -123,8 +93,7 @@ def read_file(filename):
         targets: *list*
             [x,y] coordinates of the taerget points
     '''
-
-    file = open(filename, 'r')
+    file = open(filename,'r')
     raw_string_of_text = file.read()
 
     file_by_lines = raw_string_of_text.strip().splitlines()
@@ -155,14 +124,14 @@ def read_file(filename):
         if line[0] == 'A':
             if "o" not in line:
                 reflect = line
-        if line[0] == 'B':
-            if "o" not in line:
+        if line[0] =='B':
+            if 'o' not in line:
                 opaque = line
         if line[0] == 'C':
-            if "o" not in line:
+            if 'o' not in line:
                 refract = line
         if line[0] == 'P':
-            line = line.strip('P').replace(' ', '')
+            line = line.strip('P').replace(' ','')
             point = [int(line[0]), int(line[1])]
             targets.append(point)
         if line[0] == 'L':
@@ -188,7 +157,29 @@ def read_file(filename):
     num_blocks = [reflect, opaque, refract]
     # print(board_str)
     file.close()
+
     return board_str, num_blocks, lasers_pos, lasers_dir, targets
+
+
+VALID = 0
+INVALID = 1
+REFRACT = 2
+OPAQUE = 3
+REFLECT = 4
+
+COLORS = {
+    # Color VAILD White
+    VALID: (255, 255, 255),
+    # Color INVALID Black
+    INVALID: (0, 0, 0),
+    # Color REFLECT Red
+    REFLECT: (255, 0, 0),
+    # Color OPAQUE Green
+    OPAQUE: (0, 255, 0),
+    # Color REFRACT Blue
+    REFRACT: (0, 0, 255),
+
+}
 
 def solve_game(filename):
     '''
@@ -212,8 +203,13 @@ def solve_game(filename):
     
     solved = False
     iterations = 0
-    MAX_ITERATIONS = 10000
-    grid_List = []
+    MAX_ITERATIONS = 10000000
+    board_List = []
+
+    # game1 = Game(board_str, num_blocks, lasers_pos, lasers_dir, targets)
+    # game1.create_board()
+    # game1.create_grid()
+    # board_List.append(game1.board) #appends the empty board to initialize board_List
 
     while solved == False and iterations <= MAX_ITERATIONS:
         game1 = Game(board_str, num_blocks, lasers_pos, lasers_dir, targets)
@@ -288,13 +284,16 @@ def solve_game(filename):
         # create grids from the blocks you put
         game1.create_grid()
 
-        if(len(grid_List) != 0):
-                for i in range(0, len(grid_List)):
-                    if(game1.board == grid_List[i]):
-                        game1.create_board()
-                        game1.create_grid()
-                        rand_x = random.randint(0, len(game1.board[0]) - 1)
-                        rand_y = random.randint(0, len(game1.board) - 1)
+        if(len(board_List) != 0):
+            if game1.board in board_List:
+                pass
+
+        #         for i in range(len(board_List)):
+        #             if(game1.board == board_List[i]):
+        #                 game1.create_board()
+        #                 game1.create_grid()
+        #                 rand_x = random.randint(0, len(game1.board[0]) - 1)
+        #                 rand_y = random.randint(0, len(game1.board) - 1)
 
         print('board')
         for i in range(len(game1.board)):
@@ -332,13 +331,14 @@ def solve_game(filename):
             solved = True
             # print(iterations)
             max_iters = iterations + 1
+            save_board(game1.board, blockSize=100)
             print("you solved it in %i iterations!" %max_iters)
             print('the winning board is:')
-            save_board(game1.board, blockSize=100)
             for i in range(len(game1.board)):
                 print(game1.board[i])
+
         else:
-            grid_List.append(game1.board)
+            board_List.append(game1.board)
             solve = False
             iterations += 1
             print("NEW BOARD")
@@ -606,18 +606,10 @@ class Game():
 
         current_x, current_y = laser.get_position()
         xdir, ydir = laser.get_direction()
-        print(xdir)
-        print(ydir)
 
         # check to see if any block is adjacent to the laser origin
         if self.grid[current_y][current_x] == REFLECT:
             print('reflective adj')
-            print(current_x)
-            print(current_y)
-            print(xdir)
-            print(ydir)
-            print(len(self.grid))
-            print(len(self.grid_faces))
             if (self.grid_faces[current_y][current_x] == 2 and self.grid[current_y][current_x+xdir] == REFLECT) or (self.grid_faces[current_y][current_x] == 1 and self.grid[current_y+ydir][current_x] == REFLECT):
                 face_number = self.get_block_face(current_x,current_y)
                 # laser.add_to_path([current_x, current_y])
@@ -640,30 +632,24 @@ class Game():
                 # print('it got absorbed before entering board')
         if self.grid[current_y][current_x] == REFRACT:
             print('refract adj')
-            print(current_x)
-            print(current_y)
-            print(xdir)
-            print(ydir)
-            print(len(self.grid))
-            print(len(self.grid_faces))
             if (self.grid_faces[current_y][current_x] == 2 and self.grid[current_y][current_x+xdir] == REFRACT) or (self.grid_faces[current_y][current_x] == 1 and self.grid[current_y+ydir][current_x] == REFRACT):
                 face_number = self.get_block_face(current_x,current_y)
                 # laser.add_to_path([current_x, current_y])
                 print('direction of original laser before refracting: '+str(xdir)+', '+str(ydir))
-                laser2 = laser.refract(xdir, ydir, face_number)
+                laser2 = laser.refract(current_x, current_y, xdir, ydir, face_number)
                 print('direction of original laser after refracting: '+str(laser.xdir)+', '+str(laser.ydir))
                 print('direction of second beam after refracting: '+str(laser2.xdir)+', '+str(laser2.ydir))
 
 
                 self.available_lasers.append(laser2)
                 print('laser was refracted in the edge block')
-                print('current lasers with all trajectories and positions (and if they were shot) are:')
+                print('current lasers with all trajectories and directions (and if they were shot) are:')
                 for i in range(len(self.available_lasers)):
                     print(self.available_lasers[i].get_trajectory())
-                    print(self.available_lasers[i].get_position())
+                    print(self.available_lasers[i].get_direction())
                     print(self.available_lasers[i].was_shot)
 
-        print('trying to add a '+str(type(current_y))+' and a '+str(type(laser.ydir)))#+' should result in '+str(current_y+laser.ydir))
+        # print('trying to add a '+str(type(current_y))+' and a '+str(type(laser.ydir)))#+' should result in '+str(current_y+laser.ydir))
 
         next_x = current_x + laser.xdir
         next_y = current_y + laser.ydir
@@ -707,12 +693,12 @@ class Game():
                         # print('current path after pop: '+ str(laser.path))
                         # print('2direction before reflecting: '+ str(xdir) + ', ' + str(ydir))
                         laser.reflect(xdir, ydir, face_number)
-                        xdir, ydir = laser.get_direction()
+                        # xdir, ydir = laser.get_direction()
                         # print('2direction after reflecting: '+ str(xdir) + ', ' + str(ydir))
                         print('it was reflected at position: '+str(current_x)+', '+str(current_y))
 
-                        next_x = current_x + xdir
-                        next_y = current_y + ydir
+                        next_x = current_x + laser.xdir
+                        next_y = current_y + laser.ydir
                         laser.add_to_path([next_x,next_y])
 
                 if self.grid[current_y][current_x] == OPAQUE:
@@ -732,17 +718,25 @@ class Game():
 
                 if self.grid[current_y][current_x] == REFRACT:
                     print('im touching a refractive block')
-                    if (self.grid_faces[current_y][current_x] == 2 and self.grid[current_y][current_x+xdir] == REFRACT) or (self.grid_faces[current_y][current_x] == 1 and self.grid[current_y+ydir][current_x] == REFRACT):
+                    if (self.grid_faces[current_y][current_x] == 2 and self.grid[current_y][current_x+laser.xdir] == REFRACT) or (self.grid_faces[current_y][current_x] == 1 and self.grid[current_y+laser.ydir][current_x] == REFRACT):
                         face_number = self.get_block_face(current_x,current_y)
-                        laser.add_to_path([current_x, current_y])
-                        print('2direction of original laser before refracting: '+str(xdir)+', '+str(ydir))
+                        # laser.add_to_path([current_x, current_y])
+                        print('2direction of original laser before refracting: '+str(laser.xdir)+', '+str(laser.ydir))
+                        print('trajectory of main laser so far: ')
+                        print(laser.get_trajectory())
                         initial_for_second = laser.path.pop()
-                        laser2 = laser.refract(initial_for_second[0], initial_for_second[1], face_number)
+                        print('trajectory after popping: ')
+                        print(laser.get_trajectory())
+                        laser2 = laser.refract(initial_for_second[0]-laser.xdir, initial_for_second[1]-laser.ydir, laser.xdir, laser.ydir, face_number)
                         print('laser beam was refracted at position '+str(current_x)+', '+str(current_y))
                         print('2direction of original laser after refracting: '+str(laser.xdir)+', '+str(laser.ydir))
                         print('2direction of second beam after refracting: '+str(laser2.xdir)+', '+str(laser2.ydir))
                         self.available_lasers.append(laser2)
                         print('2current lasers with all trajectories (and if they were shot) are:')
+                        print(self.available_lasers)
+                        next_x = current_x + laser.xdir
+                        next_y = current_y + laser.ydir
+
                         for i in range(len(self.available_lasers)):
                             print(self.available_lasers[i].get_trajectory())
                             print(self.available_lasers[i].get_position())
@@ -752,6 +746,7 @@ class Game():
 
             else: 
                 laser.add_to_path([-1, -1])
+
             print('current: '+str(current_x)+', '+str(current_y))
             print('is being replaced by: '+str(next_x)+', '+str(next_y))
 
@@ -759,9 +754,9 @@ class Game():
             current_y = next_y
             print('now the current is: '+str(current_x)+', '+str(current_y))
             print('nd the path is: '+str(laser.get_trajectory()))
-            next_x = current_x + xdir
-            next_y = current_y + ydir
-            print('if we follow direction: '+str(xdir)+', '+str(ydir))
+            next_x = current_x + laser.xdir
+            next_y = current_y + laser.ydir
+            print('if we follow direction: '+str(laser.xdir)+', '+str(laser.ydir))
             print('the next up is: '+str(next_x)+', '+str(next_y))
 
         laser.was_shot = True
@@ -905,10 +900,13 @@ class Laser():
 
         
 
-    def refract(self, xdir, ydir, face_number):
+    def refract(self, x, y, xdir, ydir, face_number):
         '''
-        Function the describes what happens when a laser beam hits an transparent block: light is refracted AND reflected. The function creates a new pseudo laser object at the point where the refraction occurs to account of the new path being created. 
+        Function the describes what happens when a laser beam hits an transparent block: light is refracted AND reflected. The function creates a new pseudo laser object at the point where the refraction occurs to account of the new path being created. The original beam is reflected and a new laser is created with origin at the refraction point and the same direction as teh original laser before refrction.
+
+
         **Parameters**
+
             x: *int*
                 current path position x coordinate where the refraction occurs
             y: *int*
@@ -917,7 +915,10 @@ class Laser():
                 incoming direction (x component) of the path to be refracted
             ydir: *int*
                 incoming direction (y component) of the path to be refracted
+
+
         **Returns**
+
             second_xdir: *int*
                 Outbound reflected beam x direction.
             second_ydir: *int*
@@ -925,19 +926,21 @@ class Laser():
             refracted_laser: *Laser class object*
                 Laser object with the same direction as original laser. This returned laser has x,y coordinates at the point of refraction.
         '''
-        refracted_laser = Laser(self.x, self.y, xdir, ydir) #creates a second laser from the refracting point, that continues the same path as previously
+        refracted_laser = Laser(x, y, xdir, ydir) #creates a second laser from the refracting point, that continues the same path as previously.
+        # since this refracted laser will have an adjacent refractive block always, add the first two steps to path from the beginning to avoid refracting the beam double.
+        refracted_laser.path.append([x+xdir, y+ydir])
         if face_number==1:
 
             second_xdir = xdir
-            second_ydir = -ydir
+            second_ydir = - ydir
 
         if face_number==2:
 
-            second_xdir = -xdir
+            second_xdir = - xdir
             second_ydir = ydir
 
         self.xdir = second_xdir
-        self.ydir = second_ydir
+        self.ydir = second_ydir 
         return refracted_laser
 
 
@@ -948,10 +951,9 @@ if __name__ == "__main__":
     # solved, winning_board = solve_game("mad_4.bff") # yes but slower
     # solved, winning_board = solve_game("numbered_6.bff")
 
-    # solved, winning_board = solve_game("mad_7.bff")
-    # solved, winning_board = solve_game("yarn_5.bff")
-    solved, winning_board = solve_game("tiny_5.bff")
-    # solved, winning_board = solve_game("mad_1.bff")
+
+    # solved, winning_board = solve_game("tiny_5.bff")
+    solved, winning_board = solve_game("mad_1.bff")
 
     print('in main')
     for i in range(len(winning_board)):
