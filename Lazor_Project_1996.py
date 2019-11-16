@@ -1,5 +1,106 @@
 import copy 
 import random 
+from PIL import Image
+
+
+VALID = 0
+INVALID = 1
+REFRACT = 2
+OPAQUE = 3
+REFLECT = 4
+
+COLORS = {
+    # Color VAILD White
+    VALID: (255, 255, 255),
+    # Color INVALID Black
+    INVALID: (0, 0, 0),
+    # Color REFLECT Red
+    REFLECT: (255, 0, 0),
+    # Color OPAQUE Green
+    OPAQUE: (0, 255, 0),
+    # Color REFRACT Blue
+    REFRACT: (0, 0, 255),
+
+}
+
+def set_color(img, x0, y0, dim, color):
+    '''
+    Seeting the color of the image pixels
+
+    **Parameters**
+
+        img: *JPG file*
+            Image file, with its extension
+            (ex. spring.jpg, cat.png).
+        x0: *int*
+            X coordinate for width
+        y0: *int*
+            Y coordinate for height
+        dim: *int*
+            Size of the block.
+        color: *int*
+            Color for the maze. During maze generation it will
+            be WALL(black) or PATH(white). During the solution it will
+            turn the PATH into a VALID_PATH(green), INVALID_PATH(red), and
+            an ENDPOINT(blue) with the save_maze function
+
+    **Returns**
+
+        None
+    '''
+
+    for x in range(dim):
+        for y in range(dim):
+            # Change the color of the specified pixel
+            img.putpixel(
+                (dim * x0 + x, dim * y0 + y),
+                color
+            )
+
+def save_board(board, blockSize=2, basename="lazor"):
+    '''
+    Purpose is to take the 2D array of pixel values
+    and save them into a board as a PNG file
+
+    **Parameters**
+
+        board: *2D array int*
+            A 2 dimensional array of pixel values
+            to draw the image
+        blockSize: *int optional*
+            How much we want to increase the dimensions
+            of the image by
+        basename: *String optional*
+            String used as the first part of the image
+            name
+
+    **Returns**
+
+        None
+    '''
+    # Width of the image
+    w_blocks = len(board[0])
+    # Height of the image
+    h_blocks = len(board)
+    # Tuple containing the width and length of the image
+    # uses the block size to increase the dimensions of the image
+    SIZE = (w_blocks * blockSize, h_blocks * blockSize)
+    # Creating the image file
+    # Note that the image is all black
+    img = Image.new("RGB", SIZE, color=COLORS[VALID])
+    # Nested for loop to go through the the newly
+    # created image file and set different color
+    # i.e. the PATH
+    for y, row in enumerate(board):
+        for x, block_ID in enumerate(row):
+            set_color(img, x, y, blockSize, COLORS[block_ID])
+    # Saving the image
+    img.save("%s_%d_%d_%d.png"
+             % (basename, w_blocks, h_blocks, blockSize))
+
+
+
+
 
 def read_file(filename):
     '''
@@ -23,7 +124,8 @@ def read_file(filename):
             [x,y] coordinates of the taerget points
     '''
 
-    raw_string_of_text = open(filename, 'r').read()
+    file = open(filename, 'r')
+    raw_string_of_text = file.read()
 
     file_by_lines = raw_string_of_text.strip().splitlines()
 
@@ -51,13 +153,16 @@ def read_file(filename):
         if line == "GRID STOP":
             stop_idx = idx
         if line[0] == 'A':
-            reflect = line
-        if line[0] =='B':
-            opaque = line
+            if "o" not in line:
+                reflect = line
+        if line[0] == 'B':
+            if "o" not in line:
+                opaque = line
         if line[0] == 'C':
-            refract = line
+            if "o" not in line:
+                refract = line
         if line[0] == 'P':
-            line = line.strip('P').replace(' ','')
+            line = line.strip('P').replace(' ', '')
             point = [int(line[0]), int(line[1])]
             targets.append(point)
         if line[0] == 'L':
@@ -82,15 +187,8 @@ def read_file(filename):
 
     num_blocks = [reflect, opaque, refract]
     # print(board_str)
-
+    file.close()
     return board_str, num_blocks, lasers_pos, lasers_dir, targets
-
-
-VALID = 0
-INVALID = 1
-REFRACT = 2
-OPAQUE = 3
-REFLECT = 4
 
 def solve_game(filename):
     '''
@@ -114,7 +212,9 @@ def solve_game(filename):
     
     solved = False
     iterations = 0
-    MAX_ITERATIONS = 10
+    MAX_ITERATIONS = 10000
+    grid_List = []
+
     while solved == False and iterations <= MAX_ITERATIONS:
         game1 = Game(board_str, num_blocks, lasers_pos, lasers_dir, targets)
         game1.create_board()
@@ -188,6 +288,14 @@ def solve_game(filename):
         # create grids from the blocks you put
         game1.create_grid()
 
+        if(len(grid_List) != 0):
+                for i in range(0, len(grid_List)):
+                    if(game1.board == grid_List[i]):
+                        game1.create_board()
+                        game1.create_grid()
+                        rand_x = random.randint(0, len(game1.board[0]) - 1)
+                        rand_y = random.randint(0, len(game1.board) - 1)
+
         print('board')
         for i in range(len(game1.board)):
             print(game1.board[i])
@@ -226,9 +334,11 @@ def solve_game(filename):
             max_iters = iterations + 1
             print("you solved it in %i iterations!" %max_iters)
             print('the winning board is:')
+            save_board(game1.board, blockSize=100)
             for i in range(len(game1.board)):
                 print(game1.board[i])
         else:
+            grid_List.append(game1.board)
             solve = False
             iterations += 1
             print("NEW BOARD")
@@ -496,10 +606,18 @@ class Game():
 
         current_x, current_y = laser.get_position()
         xdir, ydir = laser.get_direction()
+        print(xdir)
+        print(ydir)
 
         # check to see if any block is adjacent to the laser origin
         if self.grid[current_y][current_x] == REFLECT:
             print('reflective adj')
+            print(current_x)
+            print(current_y)
+            print(xdir)
+            print(ydir)
+            print(len(self.grid))
+            print(len(self.grid_faces))
             if (self.grid_faces[current_y][current_x] == 2 and self.grid[current_y][current_x+xdir] == REFLECT) or (self.grid_faces[current_y][current_x] == 1 and self.grid[current_y+ydir][current_x] == REFLECT):
                 face_number = self.get_block_face(current_x,current_y)
                 # laser.add_to_path([current_x, current_y])
@@ -522,6 +640,12 @@ class Game():
                 # print('it got absorbed before entering board')
         if self.grid[current_y][current_x] == REFRACT:
             print('refract adj')
+            print(current_x)
+            print(current_y)
+            print(xdir)
+            print(ydir)
+            print(len(self.grid))
+            print(len(self.grid_faces))
             if (self.grid_faces[current_y][current_x] == 2 and self.grid[current_y][current_x+xdir] == REFRACT) or (self.grid_faces[current_y][current_x] == 1 and self.grid[current_y+ydir][current_x] == REFRACT):
                 face_number = self.get_block_face(current_x,current_y)
                 # laser.add_to_path([current_x, current_y])
@@ -805,15 +929,15 @@ class Laser():
         if face_number==1:
 
             second_xdir = xdir
-            second_ydir = - ydir
+            second_ydir = -ydir
 
         if face_number==2:
 
-            second_xdir = - xdir
+            second_xdir = -xdir
             second_ydir = ydir
 
         self.xdir = second_xdir
-        self.ydir = second_ydir 
+        self.ydir = second_ydir
         return refracted_laser
 
 
@@ -824,7 +948,8 @@ if __name__ == "__main__":
     # solved, winning_board = solve_game("mad_4.bff") # yes but slower
     # solved, winning_board = solve_game("numbered_6.bff")
 
-
+    # solved, winning_board = solve_game("mad_7.bff")
+    # solved, winning_board = solve_game("yarn_5.bff")
     solved, winning_board = solve_game("tiny_5.bff")
     # solved, winning_board = solve_game("mad_1.bff")
 
